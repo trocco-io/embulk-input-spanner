@@ -6,10 +6,6 @@ plugins {
 }
 repositories {
     mavenCentral()
-    jcenter()
-}
-configurations {
-    provided
 }
 
 group = "io.trocco"
@@ -20,10 +16,17 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile  "org.embulk:embulk-core:0.9.23"
-    provided "org.embulk:embulk-core:0.9.23"
-    // compile "YOUR_JAR_DEPENDENCY_GROUP:YOUR_JAR_DEPENDENCY_MODULE:YOUR_JAR_DEPENDENCY_VERSION"
-    testCompile "junit:junit:4.+"
+    compileOnly "org.embulk:embulk-api:0.10.33"
+    compileOnly "org.embulk:embulk-spi:0.10.33"
+
+    compile "org.embulk:embulk-util-config:0.3.0"
+    compile "org.embulk:embulk-util-json:0.1.1"
+    compile "javax.validation:validation-api:1.1.0.Final"
+    compile 'org.apache.bval:bval-jsr303:0.5'
+
+    testImplementation "junit:junit:4.+"
+    testImplementation "org.embulk:embulk-core:0.10.33"
+    testImplementation "org.embulk:embulk-deps:0.10.33"
 }
 
 embulkPlugin {
