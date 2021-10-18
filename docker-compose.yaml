@@ -1,0 +1,75 @@
+version: '3'
+services:
+
+    # Spanner
+    # https://cloud.google.com/spanner/docs/emulator
+    spanner:
+      image: gcr.io/cloud-spanner-emulator/emulator:1.2.0
+      ports:
+        - "9010:9010"
+        - "9020:9020"
+
+    # Init (Create Instance)
+    gcloud-spanner-init:
+      image: gcr.io/google.com/cloudsdktool/cloud-sdk:332.0.0-slim
+      # See. https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator
+      command: >
+        bash -eu -c '
+          gcloud config configurations create emulator
+          gcloud config set auth/disable_credentials true
+          gcloud config set project $${PROJECT_ID}
+          gcloud config set api_endpoint_overrides/spanner $${SPANNER_EMULATOR_URL}
+          gcloud config set auth/disable_credentials true
+          gcloud spanner instances create $${INSTANCE_NAME} --config=emulator-config --description=Emulator --nodes=1
+        '
+      depends_on:
+        - spanner
+      environment:
+        PROJECT_ID: "test-project"
+        SPANNER_EMULATOR_URL: "http://spanner:9020/"
+        INSTANCE_NAME: "test-instance"
+        DATABASE_NAME: "test-database"
+      restart: on-failure
+
+    # DB Migration (Create Table)
+    # https://github.com/cloudspannerecosystem/wrench
+    wrench-create:
+      image: mercari/wrench:1.0.3
+      command: "create --directory /ddl"
+      environment:
+        SPANNER_PROJECT_ID: "test-project"
+        SPANNER_INSTANCE_ID: "test-instance"
+        SPANNER_DATABASE_ID: "test-database"
+        SPANNER_EMULATOR_HOST: "spanner:9010"
+        SPANNER_EMULATOR_URL: "http://spanner:9020/"
+      depends_on:
+        - gcloud-spanner-init
+      volumes:
+        - ./example/ddl:/ddl
+      restart: on-failure
+
+    # DB Migration (Insert data)
+    # https://github.com/cloudspannerecosystem/wrench
+    wrench-apply:
+      image: mercari/wrench:1.0.3
+      command: "apply --dml /dml/dml.sql"
+      environment:
+        SPANNER_PROJECT_ID: "test-project"
+        SPANNER_INSTANCE_ID: "test-instance"
+        SPANNER_DATABASE_ID: "test-database"
+        SPANNER_EMULATOR_HOST: "spanner:9010"
+        SPANNER_EMULATOR_URL: "http://spanner:9020/"
+      volumes:
+        - ./example/dml:/dml
+      depends_on:
+        - wrench-create
+      restart: on-failure
+
+    # CLI
+    # https://github.com/cloudspannerecosystem/spanner-cli
+    spanner-cli:
+      build:
+        context: ./docker/spanner-cli
+      environment:
+        SPANNER_EMULATOR_HOST: "spanner:9010"
+      command: ['echo', 'Run "docker-compose run --rm spanner-cli spanner-cli -p test-project -i test-instance -d test-database"']
