@@ -1,86 +1,108 @@
 package org.embulk.input.spanner;
 
-import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Optional;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import org.apache.bval.jsr303.ApacheValidationProvider;
-import org.embulk.config.ConfigDiff;
-import org.embulk.config.ConfigSource;
-import org.embulk.config.TaskReport;
-import org.embulk.config.TaskSource;
-import org.embulk.spi.InputPlugin;
-import org.embulk.spi.PageOutput;
-import org.embulk.spi.Schema;
+import java.util.Properties;
+import org.embulk.input.jdbc.AbstractJdbcInputPlugin;
+import org.embulk.input.jdbc.JdbcInputConnection;
+import org.embulk.input.jdbc.getter.ColumnGetterFactory;
+import org.embulk.input.spanner.jdbc.SpannerJdbcInputConnection;
+import org.embulk.input.spanner.jdbc.getter.SpannerJdbcColumnGetterFactory;
+import org.embulk.spi.PageBuilder;
 import org.embulk.util.config.Config;
 import org.embulk.util.config.ConfigDefault;
-import org.embulk.util.config.ConfigMapper;
-import org.embulk.util.config.ConfigMapperFactory;
-import org.embulk.util.config.Task;
-import org.embulk.util.config.TaskMapper;
-import org.embulk.util.config.units.SchemaConfig;
+import org.embulk.util.config.units.LocalFile;
 
-public class SpannerInputPlugin implements InputPlugin {
-  private static final Validator VALIDATOR =
-      Validation.byProvider(ApacheValidationProvider.class)
-          .configure()
-          .buildValidatorFactory()
-          .getValidator();
-  private static final ConfigMapperFactory CONFIG_MAPPER_FACTORY =
-      ConfigMapperFactory.builder().addDefaultModules().withValidator(VALIDATOR).build();
-
-  public interface PluginTask extends Task {
-    // configuration option 1 (required integer)
-    @Config("option1")
-    public int getOption1();
-
-    // configuration option 2 (optional string, null is not allowed)
-    @Config("option2")
-    @ConfigDefault("\"myvalue\"")
-    public String getOption2();
-
-    // configuration option 3 (optional string, null is allowed)
-    @Config("option3")
+public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
+  public interface PluginTask extends AbstractJdbcInputPlugin.PluginTask {
+    @Config("driver_path")
     @ConfigDefault("null")
-    public Optional<String> getOption3();
+    public Optional<String> getDriverPath();
 
-    // if you get schema from config
-    @Config("columns")
-    public SchemaConfig getColumns();
+    @Config("auth_method")
+    @ConfigDefault("json_key")
+    String getAuthMethod();
+
+    @Config("json_keyfile")
+    @ConfigDefault("null")
+    Optional<LocalFile> getJsonKeyFile();
+
+    @Config("host")
+    @ConfigDefault("null")
+    Optional<String> getHost();
+
+    @Config("port")
+    @ConfigDefault("null")
+    Optional<Integer> getPort();
+
+    @Config("project_id")
+    String getProjectId();
+
+    @Config("instance_id")
+    String getInstanceId();
+
+    @Config("database_id")
+    String getDatabaseId();
   }
 
   @Override
-  public ConfigDiff transaction(ConfigSource config, InputPlugin.Control control) {
-    final ConfigMapper configMapper = CONFIG_MAPPER_FACTORY.createConfigMapper();
-    final PluginTask task = configMapper.map(config, PluginTask.class);
-
-    Schema schema = task.getColumns().toSchema();
-    int taskCount = 1; // number of run() method calls
-
-    return resume(task.dump(), schema, taskCount, control);
+  protected Class<? extends AbstractJdbcInputPlugin.PluginTask> getTaskClass() {
+    return PluginTask.class;
   }
 
   @Override
-  public ConfigDiff resume(
-      TaskSource taskSource, Schema schema, int taskCount, InputPlugin.Control control) {
-    control.run(taskSource, schema, taskCount);
-    return CONFIG_MAPPER_FACTORY.newConfigDiff();
+  protected ColumnGetterFactory newColumnGetterFactory(
+      PageBuilder pageBuilder, ZoneId dateTimeZone) {
+    return new SpannerJdbcColumnGetterFactory(pageBuilder, dateTimeZone);
   }
 
   @Override
-  public void cleanup(
-      TaskSource taskSource, Schema schema, int taskCount, List<TaskReport> successTaskReports) {}
+  protected JdbcInputConnection newConnection(AbstractJdbcInputPlugin.PluginTask task)
+      throws SQLException {
+    PluginTask t = (PluginTask) task;
+    loadDriver("com.google.cloud.spanner.jdbc.JdbcDriver", t.getDriverPath());
 
-  @Override
-  public TaskReport run(TaskSource taskSource, Schema schema, int taskIndex, PageOutput output) {
-    final TaskMapper taskMapper = CONFIG_MAPPER_FACTORY.createTaskMapper();
-    final PluginTask task = taskMapper.map(taskSource, PluginTask.class);
-    // Write your code here :)
-    throw new UnsupportedOperationException("SpannerInputPlugin.run method is not implemented yet");
+    Properties props = new Properties();
+    props.setProperty("readonly", "true");
+    props.setProperty("lenient", "true");
+    t.getJsonKeyFile()
+        .ifPresent(
+            file -> props.setProperty("credentials", file.getPath().toAbsolutePath().toString()));
+    props.putAll(t.getOptions());
+
+    props.setProperty(
+        "connectTimeout", String.valueOf(t.getConnectTimeout() * 1000)); // milliseconds
+    props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout() * 1000)); // milliseconds
+    props.setProperty("autoConfigEmulator", "true");
+
+    Connection con = DriverManager.getConnection(buildJdbcConnectionUrl(t), props);
+    try {
+      SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con);
+      con = null;
+      return c;
+    } finally {
+      if (con != null) {
+        con.close();
+      }
+    }
   }
 
-  @Override
-  public ConfigDiff guess(ConfigSource config) {
-    return CONFIG_MAPPER_FACTORY.newConfigDiff();
+  private String buildJdbcConnectionUrl(PluginTask task) {
+    // ref.
+    // https://github.com/googleapis/java-spanner/blob/7de41bf/google-cloud-spanner/src/main/java/com/google/cloud/spanner/connection/ConnectionOptions.java#L320-L324
+    StringBuilder sb = new StringBuilder();
+    sb.append("jdbc:cloudspanner:");
+    task.getHost().ifPresent(host -> sb.append("//").append(host));
+    task.getPort().ifPresent(port -> sb.append(":").append(port));
+    sb.append("/projects/");
+    sb.append(task.getProjectId());
+    sb.append("/instances/");
+    sb.append(task.getInstanceId());
+    sb.append("/databases/");
+    sb.append(task.getDatabaseId());
+    return sb.toString();
   }
 }
