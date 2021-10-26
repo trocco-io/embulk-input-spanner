@@ -1,0 +1,105 @@
+plugins {
+    id "java"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "com.google.cloud:google-cloud-spanner-jdbc:2.4.5"
+}
+shadowJar { // Relocate Guava packages since it's incompatible with Guava's version from Embulk
+    classifier = "shadow"
+    dependencies {
+        /*
+        $ ./gradlew :google-cloud-spanner-jdbc-shadow:dependencies
+
+        ...<snip>...
+
+        compileClasspath - Compile classpath for source set 'main'.
+        \--- com.google.cloud:google-cloud-spanner-jdbc:2.4.5
+             +--- com.google.http-client:google-http-client:1.40.0
+             +--- org.apache.httpcomponents:httpclient:4.5.13
+             +--- org.apache.httpcomponents:httpcore:4.4.14
+             +--- com.google.j2objc:j2objc-annotations:1.3
+             +--- io.opencensus:opencensus-api:0.28.0
+             +--- io.opencensus:opencensus-contrib-http-util:0.28.0
+             +--- io.grpc:grpc-api:1.40.1
+             +--- io.grpc:grpc-context:1.40.1
+             +--- com.google.cloud:google-cloud-core-grpc:2.1.6
+             +--- com.google.api:gax:2.5.0
+             +--- com.google.api:gax-grpc:2.5.0
+             +--- io.grpc:grpc-core:1.40.1
+             +--- com.google.api.grpc:proto-google-common-protos:2.5.0
+             +--- com.google.cloud:google-cloud-spanner:6.12.5
+             +--- com.google.cloud:grpc-gcp:1.1.0
+             +--- io.grpc:grpc-auth:1.40.1
+             +--- io.grpc:grpc-protobuf:1.40.1
+             +--- io.grpc:grpc-protobuf-lite:1.40.1
+             +--- io.grpc:grpc-stub:1.40.1
+             +--- javax.annotation:javax.annotation-api:1.3.2
+             +--- com.google.auto.value:auto-value-annotations:1.8.2
+             +--- com.google.protobuf:protobuf-java-util:3.17.3
+             +--- com.google.errorprone:error_prone_annotations:2.9.0
+             +--- com.google.api.grpc:grpc-google-common-protos:2.5.0
+             +--- com.google.guava:failureaccess:1.0.1
+             +--- com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava
+             +--- org.checkerframework:checker-compat-qual:2.5.5
+             +--- com.google.api.grpc:proto-google-iam-v1:1.1.2
+             +--- com.google.http-client:google-http-client-gson:1.40.0
+             +--- io.opencensus:opencensus-contrib-grpc-util:0.28.0
+             +--- commons-logging:commons-logging:1.2
+             +--- commons-codec:commons-codec:1.15
+             +--- com.google.api.grpc:proto-google-cloud-spanner-admin-instance-v1:6.12.5
+             +--- com.google.api.grpc:proto-google-cloud-spanner-admin-database-v1:6.12.5
+             +--- com.google.api.grpc:grpc-google-cloud-spanner-admin-instance-v1:6.12.5
+             +--- com.google.api.grpc:grpc-google-cloud-spanner-v1:6.12.5
+             +--- com.google.api.grpc:grpc-google-cloud-spanner-admin-database-v1:6.12.5
+             +--- org.checkerframework:checker-qual:3.8.0
+             +--- com.google.code.gson:gson:2.8.8
+             +--- io.grpc:grpc-grpclb:1.40.1
+             +--- org.conscrypt:conscrypt-openjdk-uber:2.5.1
+             +--- io.grpc:grpc-alts:1.40.1
+             +--- com.google.protobuf:protobuf-java:3.17.3
+             +--- com.google.guava:guava:30.1.1-jre
+             +--- org.threeten:threetenbp:1.5.1
+             +--- io.grpc:grpc-netty-shaded:1.40.1
+             +--- com.google.api:api-common:2.0.2
+             +--- com.google.code.findbugs:jsr305:3.0.2
+             +--- com.google.auth:google-auth-library-oauth2-http:1.1.0
+             +--- com.google.auth:google-auth-library-credentials:1.1.0
+             +--- com.google.cloud:google-cloud-core:2.1.6
+             \--- com.google.api.grpc:proto-google-cloud-spanner-v1:6.12.5
+
+        ...<snip>...
+
+        */
+        include dependency("com.google.api:.*")
+        include dependency("com.google.api.grpc:.*")
+        include dependency("com.google.auth:.*")
+        include dependency("com.google.auto.value:.*")
+        include dependency("com.google.cloud:.*")
+        include dependency("com.google.code.findbugs:.*")
+        include dependency("com.google.code.gson:.*")
+        include dependency("com.google.errorprone:.*")
+        include dependency("com.google.guava:.*")
+        include dependency("com.google.http-client:.*")
+        include dependency("com.google.j2objc:.*")
+        include dependency("com.google.protobuf:.*")
+        include dependency("commons-codec:.*")
+        include dependency("commons-logging:.*")
+        include dependency("io.grpc:.*")
+        include dependency("io.opencensus:.*")
+        include dependency("javax.annotation:.*")
+        include dependency("org.apache.httpcomponents:.*")
+        include dependency("org.checkerframework:.*")
+        include dependency("org.conscrypt:.*")
+        include dependency("org.threeten:.*")
+    }
+
+    relocate "com.google.common", "embulk.input.spanner.com.google.common"
+}
