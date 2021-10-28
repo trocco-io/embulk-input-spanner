@@ -73,11 +73,6 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
             file -> props.setProperty("credentials", file.getPath().toAbsolutePath().toString()));
     props.putAll(t.getOptions());
 
-    props.setProperty(
-        "connectTimeout", String.valueOf(t.getConnectTimeout() * 1000)); // milliseconds
-    props.setProperty("socketTimeout", String.valueOf(t.getSocketTimeout() * 1000)); // milliseconds
-    props.setProperty("autoConfigEmulator", "true");
-
     Connection con = DriverManager.getConnection(buildJdbcConnectionUrl(t), props);
     try {
       SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con);
