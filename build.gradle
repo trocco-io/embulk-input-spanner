@@ -4,7 +4,6 @@ plugins {
     id "org.embulk.embulk-plugins" version "0.4.2"
     id "com.diffplug.spotless" version "5.15.0"
     id "com.palantir.git-version" version "0.12.3"
-    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 repositories {
     mavenCentral()
@@ -33,7 +32,7 @@ dependencies {
     compile "org.embulk:embulk-util-json:0.1.1"
 
     compile "org.embulk:embulk-input-jdbc:0.12.3"
-    compile "com.google.cloud:google-cloud-spanner-jdbc:2.4.5"
+    compile project(path: ":google-cloud-spanner-jdbc-shadow", configuration: 'shadow')
 
     testImplementation "junit:junit:4.+"
     testImplementation "org.embulk:embulk-core:0.10.33"
@@ -43,44 +42,6 @@ embulkPlugin {
     mainClass = "org.embulk.input.spanner.SpannerInputPlugin"
     category = "input"
     type = "spanner"
-    mainJar = "shadowJar"
-}
-shadowJar { // Relocate Guava packages since it's incompatible with Guava's version from Embulk
-    classifier = "shadow"
-    exclude "org/embulk/plugin/**"
-
-    dependencies {
-        include dependency("com.fasterxml.jackson.core:.*")
-        include dependency("com.fasterxml.jackson.datatype:.*")
-        include dependency("com.google.android:.*")
-        include dependency("com.google.api:.*")
-        include dependency("com.google.api.grpc:.*")
-        include dependency("com.google.auth:.*")
-        include dependency("com.google.auto.value:.*")
-        include dependency("com.google.cloud:.*")
-        include dependency("com.google.code.findbugs:.*")
-        include dependency("com.google.code.gson:.*")
-        include dependency("com.google.errorprone:.*")
-        include dependency("com.google.guava:.*")
-        include dependency("com.google.http-client:.*")
-        include dependency("com.google.j2objc:.*")
-        include dependency("com.google.protobuf:.*")
-        include dependency("commons-codec:.*")
-        include dependency("commons-logging:.*")
-        include dependency("io.grpc:.*")
-        include dependency("io.opencensus:.*")
-        include dependency("io.perfmark:.*")
-        include dependency("javax.annotation:.*")
-        include dependency("javax.validation:.*")
-        include dependency("org.apache.httpcomponents:.*")
-        include dependency("org.checkerframework:.*")
-        include dependency("org.codehaus.mojo:.*")
-        include dependency("org.conscrypt:.*")
-        include dependency("org.embulk:.*")
-        include dependency("org.threeten:.*")
-    }
-
-    relocate "com.google.common", "embulk.input.spanner.com.google.common"
 }
 publishing {
     publications {

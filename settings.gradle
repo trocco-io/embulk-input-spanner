@@ -1,1 +1,3 @@
 rootProject.name = 'embulk-input-spanner'
+
+include 'google-cloud-spanner-jdbc-shadow'
