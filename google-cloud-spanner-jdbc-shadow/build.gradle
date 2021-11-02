@@ -1,0 +1,28 @@
+plugins {
+    id "java"
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+repositories {
+    mavenCentral()
+}
+version = "${rootProject.version}"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    runtimeClasspath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+    shadow {
+        resolutionStrategy.activateDependencyLocking()
+        transitive = false
+    }
+}
+dependencies {
+    compile "com.google.cloud:google-cloud-spanner-jdbc:2.4.5"
+}
+// Relocate Guava packages since they are incompatible from Embulk's.
+shadowJar {
+    relocate "com.google.common", "embulk.input.spanner.com.google.common"
+}
