@@ -1,4 +1,5 @@
 # embulk-input-spanner
+[![main](https://github.com/trocco-io/embulk-input-spanner/actions/workflows/main.yml/badge.svg)](https://github.com/trocco-io/embulk-input-spanner/actions/workflows/main.yml)
 
 An embulk input plugin to load records from [Cloud Spanner](https://cloud.google.com/spanner/).
 
