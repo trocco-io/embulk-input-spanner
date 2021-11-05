@@ -12,7 +12,19 @@ An embulk input plugin to load records from [Cloud Spanner](https://cloud.google
 - **driver_path**: path to the jar file of the Spanner JDBC driver. If not set, the bundled JDBC driver ([java-spanner-jdbc v2.4.5](https://github.com/googleapis/java-spanner-jdbc/releases/tag/v2.4.5)) will be used (string, optional)
 - **project_id**: GCP project ID (string, required)
 - **instance_id**: Cloud Spanner instance ID (string, required)
-- **database**: Cloud Spanner database ID (string, required)
+- **database_id**: Cloud Spanner database ID (string, required)
+- **credentials**: Path or the content of the credentials file to use for the connection. If you do not specify any credentials at all, the default credentials of the environment as returned by [`GoogleCredentials#getApplicationDefault()`](https://github.com/googleapis/google-auth-library-java/blob/fe3d48b/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L96-L98) is used. (`LocalFile`, optional)
+  - When you define the content directly in YAML, you can use **credential.content** option like below.
+    ```
+    credentials:
+      content: |
+        {
+          "type": "service_account",
+          ...<snip>...
+        }
+    ```
+- **oauth_token**: A valid pre-existing OAuth token to use for authentication for this connection. Setting this property will take precedence over any value set for **credentials**. (string, optional)
+- **optimizer_version**: Sets the default query optimizer version to use for this connection. See also https://cloud.google.com/spanner/docs/query-optimizer/query-optimizer-versions. (string, optional)
 - **fetch_rows**: number of rows to fetch one time (used for `java.sql.Statement#setFetchSize`) (integer, default: `10000`)
 - **connect_timeout**: not supported.
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
@@ -116,13 +128,19 @@ in:
 
 ## Example
 
-TODO: Write an example.
-
 ```yaml
 in:
   type: spanner
-  option1: example1
-  option2: example2
+  auth_method: json_key
+  json_key: /path/to/credentials.json
+  project_id: test-project
+  instance_id: test-instance
+  database_id: test-database
+  table: test_table
+  socket_timeout: 0
+
+out:
+  type: stdout
 ```
 
 ## Development

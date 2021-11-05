@@ -76,9 +76,6 @@ public class ArrayColumnGetter extends AbstractColumnGetter {
     return arrayNode;
   }
 
-  // private ObjectNode buildJsonArray(Object[] elements) throws SQLException {
-  // }
-
   @Override
   protected Type getDefaultToType() {
     return org.embulk.spi.type.Types.JSON;

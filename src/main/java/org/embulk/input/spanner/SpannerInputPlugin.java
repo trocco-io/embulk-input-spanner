@@ -15,19 +15,20 @@ import org.embulk.spi.PageBuilder;
 import org.embulk.util.config.Config;
 import org.embulk.util.config.ConfigDefault;
 import org.embulk.util.config.units.LocalFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
+  private static Logger logger = LoggerFactory.getLogger(SpannerInputPlugin.class);
+
   public interface PluginTask extends AbstractJdbcInputPlugin.PluginTask {
     @Config("driver_path")
     @ConfigDefault("null")
     public Optional<String> getDriverPath();
 
-    @Config("auth_method")
-    @ConfigDefault("json_key")
-    String getAuthMethod();
-
     @Config("json_keyfile")
     @ConfigDefault("null")
+    @Deprecated
     Optional<LocalFile> getJsonKeyFile();
 
     @Config("host")
@@ -46,6 +47,18 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
 
     @Config("database_id")
     String getDatabaseId();
+
+    @Config("credentials")
+    @ConfigDefault("null")
+    Optional<LocalFile> getCredentials();
+
+    @Config("oauth_token")
+    @ConfigDefault("null")
+    Optional<String> getOauthToken();
+
+    @Config("optimizer_version")
+    @ConfigDefault("null")
+    Optional<String> getOptimizerVersion();
   }
 
   @Override
@@ -65,15 +78,8 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     PluginTask t = (PluginTask) task;
     loadDriver("com.google.cloud.spanner.jdbc.JdbcDriver", t.getDriverPath());
 
-    Properties props = new Properties();
-    props.setProperty("readonly", "true");
-    props.setProperty("lenient", "true");
-    t.getJsonKeyFile()
-        .ifPresent(
-            file -> props.setProperty("credentials", file.getPath().toAbsolutePath().toString()));
-    props.putAll(t.getOptions());
-
-    Connection con = DriverManager.getConnection(buildJdbcConnectionUrl(t), props);
+    Connection con =
+        DriverManager.getConnection(buildJdbcConnectionUrl(t), buildJdbcConnectionProperties(t));
     try {
       SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con);
       con = null;
@@ -99,5 +105,25 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     sb.append("/databases/");
     sb.append(task.getDatabaseId());
     return sb.toString();
+  }
+
+  private Properties buildJdbcConnectionProperties(PluginTask task) {
+    Properties props = new Properties();
+    // ref. https://github.com/googleapis/java-spanner-jdbc#connection-url-properties
+    props.setProperty("readonly", "true");
+    props.setProperty("lenient", "true");
+    task.getJsonKeyFile()
+        .ifPresent(
+            file -> {
+              logger.warn("'json_keyfile' option is deprecated, use 'credentials' option instead.");
+              props.setProperty("credentials", file.getPath().toAbsolutePath().toString());
+            });
+    task.getCredentials()
+        .ifPresent(
+            file -> props.setProperty("credentials", file.getPath().toAbsolutePath().toString()));
+    task.getOauthToken().ifPresent(token -> props.setProperty("oauthToken", token));
+    task.getOptimizerVersion().ifPresent(version -> props.setProperty("optimizerVersion", version));
+    props.putAll(task.getOptions());
+    return props;
   }
 }
