@@ -1,12 +1,13 @@
 in:
   type: spanner
-  auth_method: json_key
-  json_key: /path/to/credentials.json
   project_id: test-project
   instance_id: test-instance
   database_id: test-database
-  table: test_table
+  table: Singers
+  use_emulator: true
   socket_timeout: 0
+  column_options:
+    SingerInfo: {value_type: string}
 
 out:
   type: stdout

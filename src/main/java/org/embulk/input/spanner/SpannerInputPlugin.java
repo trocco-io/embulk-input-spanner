@@ -59,6 +59,10 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     @Config("optimizer_version")
     @ConfigDefault("null")
     public Optional<String> getOptimizerVersion();
+
+    @Config("use_emulator")
+    @ConfigDefault("false")
+    public boolean getUseEmulator();
   }
 
   @Override
@@ -81,7 +85,7 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     Connection con =
         DriverManager.getConnection(buildJdbcConnectionUrl(t), buildJdbcConnectionProperties(t));
     try {
-      SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con);
+      SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con, t.getUseEmulator());
       con = null;
       return c;
     } finally {
@@ -123,6 +127,10 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
             file -> props.setProperty("credentials", file.getPath().toAbsolutePath().toString()));
     task.getOauthToken().ifPresent(token -> props.setProperty("oauthToken", token));
     task.getOptimizerVersion().ifPresent(version -> props.setProperty("optimizerVersion", version));
+    if (task.getUseEmulator()) {
+      props.setProperty("autoConfigEmulator", "true");
+      props.setProperty("usePlainText", "true");
+    }
     props.putAll(task.getOptions());
     return props;
   }
