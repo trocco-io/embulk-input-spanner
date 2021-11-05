@@ -29,36 +29,36 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     @Config("json_keyfile")
     @ConfigDefault("null")
     @Deprecated
-    Optional<LocalFile> getJsonKeyFile();
+    public Optional<LocalFile> getJsonKeyFile();
 
     @Config("host")
     @ConfigDefault("null")
-    Optional<String> getHost();
+    public Optional<String> getHost();
 
     @Config("port")
     @ConfigDefault("null")
-    Optional<Integer> getPort();
+    public Optional<Integer> getPort();
 
     @Config("project_id")
-    String getProjectId();
+    public String getProjectId();
 
     @Config("instance_id")
-    String getInstanceId();
+    public String getInstanceId();
 
     @Config("database_id")
-    String getDatabaseId();
+    public String getDatabaseId();
 
     @Config("credentials")
     @ConfigDefault("null")
-    Optional<LocalFile> getCredentials();
+    public Optional<LocalFile> getCredentials();
 
     @Config("oauth_token")
     @ConfigDefault("null")
-    Optional<String> getOauthToken();
+    public Optional<String> getOauthToken();
 
     @Config("optimizer_version")
     @ConfigDefault("null")
-    Optional<String> getOptimizerVersion();
+    public Optional<String> getOptimizerVersion();
   }
 
   @Override
