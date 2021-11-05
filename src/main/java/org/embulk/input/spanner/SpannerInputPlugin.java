@@ -85,7 +85,7 @@ public class SpannerInputPlugin extends AbstractJdbcInputPlugin {
     Connection con =
         DriverManager.getConnection(buildJdbcConnectionUrl(t), buildJdbcConnectionProperties(t));
     try {
-      SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con);
+      SpannerJdbcInputConnection c = new SpannerJdbcInputConnection(con, t.getUseEmulator());
       con = null;
       return c;
     } finally {
