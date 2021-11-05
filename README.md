@@ -136,8 +136,7 @@ in:
 ```yaml
 in:
   type: spanner
-  auth_method: json_key
-  json_key: /path/to/credentials.json
+  credentials: /path/to/credentials.json
   project_id: test-project
   instance_id: test-instance
   database_id: test-database
