@@ -34,7 +34,7 @@ An embulk input plugin to load records from [Cloud Spanner](https://cloud.google
 - **connect_timeout**: not supported.
 - **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
 - **options**: extra JDBC properties (hash, default: {})
-  - See. [https://github.com/googleapis/java-spanner-jdbc#connection-url-properties](Cloud Spanner JDBC Connection Properties)
+  - See. [Cloud Spanner JDBC Connection Properties](https://github.com/googleapis/java-spanner-jdbc#connection-url-properties)
 - If you write SQL directly,
   - **query**: SQL to run (string)
   - **use_raw_query_with_incremental**: If true, you can write optimized query using prepared statement. See [Use incremental loading with raw query](#use-incremental-loading-with-raw-query) for more detail (boolean, default: false)
