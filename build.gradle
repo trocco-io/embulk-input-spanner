@@ -71,3 +71,14 @@ spotless {
         googleJavaFormat()
     }
 }
+test {
+	useJUnitPlatform()
+    testLogging {
+		events "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT", "STANDARD_ERROR"
+        exceptionFormat "full"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        showStandardStreams true
+	}
+}
