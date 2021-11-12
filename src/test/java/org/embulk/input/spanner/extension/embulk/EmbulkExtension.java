@@ -1,12 +1,9 @@
-package org.embulk.input.spanner.extension;
+package org.embulk.input.spanner.extension.embulk;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Properties;
 import org.embulk.EmbulkSystemProperties;
-import org.embulk.config.ConfigDiff;
 import org.embulk.config.ModelManager;
-import org.embulk.config.TaskReport;
 import org.embulk.deps.buffer.PooledBufferAllocatorImpl;
 import org.embulk.exec.SimpleTempFileSpaceAllocator;
 import org.embulk.spi.BufferAllocator;
@@ -22,7 +19,6 @@ import org.embulk.spi.GuessPlugin;
 import org.embulk.spi.InputPlugin;
 import org.embulk.spi.OutputPlugin;
 import org.embulk.spi.ParserPlugin;
-import org.embulk.spi.Schema;
 import org.embulk.spi.TempFileSpaceAllocator;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
@@ -202,19 +198,5 @@ public class EmbulkExtension
   @SuppressWarnings("deprecation")
   private ModelManager newModelManager() {
     return new ModelManager();
-  }
-
-  public static interface RunResult {
-    ConfigDiff getConfigDiff();
-
-    List<Throwable> getIgnoredExceptions();
-
-    Schema getInputSchema();
-
-    Schema getOutputSchema();
-
-    List<TaskReport> getInputTaskReports();
-
-    List<TaskReport> getOutputTaskReports();
   }
 }

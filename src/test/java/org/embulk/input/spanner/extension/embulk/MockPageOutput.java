@@ -1,4 +1,4 @@
-package org.embulk.input.spanner.extension;
+package org.embulk.input.spanner.extension.embulk;
 
 import java.util.ArrayList;
 import java.util.List;
