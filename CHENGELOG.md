@@ -1,3 +1,9 @@
+0.0.3 (2021-11-16)
+==================
+
+* [#16](https://github.com/trocco-io/embulk-input-spanner/pull/16) Write tests for SpannerInputPlugin
+* [#12](https://github.com/trocco-io/embulk-input-spanner/pull/12) Support to run with Spanner Emulator
+
 0.0.2 (2021-11-05)
 ==================
 
