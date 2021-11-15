@@ -15,6 +15,14 @@ jobs:
   main:
     runs-on: ubuntu-latest
 
+    services:
+      spanner-emulator:
+        image: gcr.io/cloud-spanner-emulator/emulator:1.2.0
+        ports:
+          - "9010:9010"
+          - "9020:9020"
+
+
     steps:
       - uses: actions/checkout@v1
       - name: Set up JDK 1.8
@@ -24,7 +32,22 @@ jobs:
       - name: lint
         # Run ./gradlew spotlessApply when failing on this step.
         run: ./gradlew spotlessCheck
+
+      - name: Setup Spanner Emulator Instance
+        run: |
+          gcloud config configurations create emulator
+          gcloud config set auth/disable_credentials true
+          gcloud config set project ${PROJECT_ID}
+          gcloud config set api_endpoint_overrides/spanner ${SPANNER_EMULATOR_URL}
+          gcloud config set auth/disable_credentials true
+          gcloud spanner instances create ${INSTANCE_NAME} --config=emulator-config --description=Emulator --nodes=1
+        env:
+          PROJECT_ID: "test-project"
+          SPANNER_EMULATOR_URL: "http://127.0.0.1:9020/"
+          INSTANCE_NAME: "test-instance"
+          DATABASE_NAME: "test-database"
       - run: ./gradlew test
+
       - name: Show Current Version
         run: ./gradlew printVersion
       - name: Build Gem & Put it into './build/gems/' Directory

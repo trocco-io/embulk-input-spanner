@@ -11,22 +11,22 @@ repositories {
 
 group = "io.trocco"
 description = "An embulk plugin to load data from Cloud Spanner."
-def versionString() {
+version = {
     def vd = versionDetails()
     if (vd.commitDistance == 0 && vd.lastTag ==~ /^[0-9]+\.[0-9]+\.[0-9]+(\.[a-zA-Z0-9]+)?/) {
         vd.lastTag
     } else {
         "0.0.0.${vd.gitHash}"
     }
-}
-version = versionString()
+}()
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compileOnly "org.embulk:embulk-api:0.10.33"
-    compileOnly "org.embulk:embulk-spi:0.10.33"
+    def embulkVersion = "0.10.33"
+    compileOnly "org.embulk:embulk-api:${embulkVersion}"
+    compileOnly "org.embulk:embulk-spi:${embulkVersion}"
 
     compile "org.embulk:embulk-util-config:0.3.0"
     compile "org.embulk:embulk-util-json:0.1.1"
@@ -34,9 +34,10 @@ dependencies {
     compile "org.embulk:embulk-input-jdbc:0.12.3"
     compile project(path: ":google-cloud-spanner-jdbc-shadow", configuration: 'shadow')
 
-    testImplementation "junit:junit:4.+"
-    testImplementation "org.embulk:embulk-core:0.10.33"
-    testImplementation "org.embulk:embulk-deps:0.10.33"
+    testImplementation platform('org.junit:junit-bom:5.8.1')
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.embulk:embulk-core:${embulkVersion}"
+    testImplementation "org.embulk:embulk-deps:${embulkVersion}"
 }
 embulkPlugin {
     mainClass = "org.embulk.input.spanner.SpannerInputPlugin"
@@ -68,5 +69,16 @@ spotless {
         importOrder()
         removeUnusedImports()
         googleJavaFormat()
+    }
+}
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT", "STANDARD_ERROR"
+        exceptionFormat "full"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        showStandardStreams true
     }
 }
