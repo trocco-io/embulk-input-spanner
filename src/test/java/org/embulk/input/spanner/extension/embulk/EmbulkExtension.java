@@ -71,6 +71,7 @@ public class EmbulkExtension
     return new Builder();
   }
 
+  private static final String EMBULK_EXTENSION_NAMESPACE_STRING = "embulkExtension";
   private static final String EMBULK_TESTER = "embulkTester";
 
   private final EmbulkSystemProperties embulkSystemProperties;
@@ -120,7 +121,9 @@ public class EmbulkExtension
   }
 
   private Store getStore(ExtensionContext context) {
-    return context.getStore(Namespace.create(getClass(), context.getRequiredTestMethod()));
+    return context.getStore(
+        Namespace.create(
+            EMBULK_EXTENSION_NAMESPACE_STRING, getClass(), context.getRequiredTestMethod()));
   }
 
   @SuppressWarnings("unchecked")
