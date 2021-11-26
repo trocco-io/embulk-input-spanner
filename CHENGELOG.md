@@ -1,3 +1,8 @@
+0.1.0 (2021-11-26)
+==================
+
+* [#18](https://github.com/trocco-io/embulk-input-spanner/pull/18) Treat Spanner json type as embulk json type
+
 0.0.3 (2021-11-16)
 ==================
 
