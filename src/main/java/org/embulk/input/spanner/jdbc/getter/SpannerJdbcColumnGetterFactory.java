@@ -2,6 +2,7 @@ package org.embulk.input.spanner.jdbc.getter;
 
 import java.sql.Types;
 import java.time.ZoneId;
+import java.util.Locale;
 import org.embulk.input.jdbc.AbstractJdbcInputPlugin.PluginTask;
 import org.embulk.input.jdbc.JdbcColumn;
 import org.embulk.input.jdbc.JdbcColumnOption;
@@ -33,8 +34,10 @@ public class SpannerJdbcColumnGetterFactory extends ColumnGetterFactory {
   @Override
   protected String sqlTypeToValueType(JdbcColumn column, int sqlType) {
     // ref. https://cloud.google.com/spanner/docs/data-types
-    switch (column.getTypeName()) {
+    switch (column.getTypeName().toLowerCase(Locale.ENGLISH)) {
       case "array":
+        return "json";
+      case "json":
         return "json";
       default:
         return super.sqlTypeToValueType(column, sqlType);
