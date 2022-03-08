@@ -1,3 +1,9 @@
+0.1.1 (2022-03-08)
+==================
+
+* Update com.google.cloud:google-cloud-spanner-jdbc 2.4.5 -> 2.6.1
+* Update cloud-spanner-emulator/emulator 1.2.0 -> 1.4.1
+
 0.1.0 (2021-11-26)
 ==================
 

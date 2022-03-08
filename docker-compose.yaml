@@ -4,7 +4,7 @@ services:
     # Spanner
     # https://cloud.google.com/spanner/docs/emulator
     spanner:
-      image: gcr.io/cloud-spanner-emulator/emulator:1.2.0
+      image: gcr.io/cloud-spanner-emulator/emulator:1.4.1
       ports:
         - "9010:9010"
         - "9020:9020"
