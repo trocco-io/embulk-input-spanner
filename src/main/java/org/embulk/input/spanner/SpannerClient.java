@@ -35,8 +35,15 @@ public class SpannerClient implements AutoCloseable {
       task.getHost().ifPresent(sb::append);
       sb.append(":");
       task.getPort().ifPresent(sb::append);
-      if (task.getUseEmulator()) builder.setEmulatorHost(sb.toString());
-      else builder.setHost(sb.toString());
+      if (task.getUseEmulator()) {
+        builder.setEmulatorHost(sb.toString());
+      } else {
+        builder.setHost(sb.toString());
+      }
+    } else {
+      if (task.getUseEmulator()) {
+        builder.setEmulatorHost("localhost:9010");
+      }
     }
     task.getJsonKeyFile()
         .ifPresent(
