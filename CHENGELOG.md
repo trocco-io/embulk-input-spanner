@@ -1,3 +1,9 @@
+0.2.0 (2022-03-12)
+==================
+
+* [#21](https://github.com/trocco-io/embulk-input-spanner/pull/21) Use [googleapis/java-spanner](https://github.com/googleapis/java-spanner) directly for parallel read feature when fetching data.
+* [#21](https://github.com/trocco-io/embulk-input-spanner/pull/21) Support json type testing.
+
 0.1.1 (2022-03-08)
 ==================
 
