@@ -1,5 +1,6 @@
 package org.embulk.input.spanner.jdbc;
 
+import com.google.cloud.spanner.SpannerException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,7 +74,18 @@ public class SpannerJdbcInputConnection extends JdbcInputConnection {
       logger.info("Parameters: {}", params);
       prepareParameters(stmt, getters, params);
     }
-    return new ParallelReadBatchSelect(client.newParallelRead(stmt));
+    try {
+      return new ParallelReadBatchSelect(client.newParallelRead(stmt));
+    } catch (SpannerException ex) {
+      String nonDistributedUnionQueryMessage =
+          "Query is not root partitionable since it does not have a DistributedUnion at the root. Please run EXPLAIN for query plan details.";
+      if (ex.getMessage().contains(nonDistributedUnionQueryMessage)) {
+        stmt.close();
+        logger.info("Do not use parallel query because {}", nonDistributedUnionQueryMessage, ex);
+        return super.newBatchSelect(preparedQuery, getters, fetchRows, queryTimeout);
+      }
+      throw ex;
+    }
   }
 
   public class ParallelReadBatchSelect implements BatchSelect {
