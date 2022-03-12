@@ -47,6 +47,8 @@ jobs:
           INSTANCE_NAME: "test-instance"
           DATABASE_NAME: "test-database"
       - run: ./gradlew test
+        env:
+          SPANNER_EMULATOR_HOST: "127.0.0.1:9010"
 
       - name: Show Current Version
         run: ./gradlew printVersion
