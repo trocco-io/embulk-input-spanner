@@ -21,6 +21,7 @@ configurations {
 }
 dependencies {
     compile "com.google.cloud:google-cloud-spanner-jdbc:2.6.1"
+    compile "com.google.cloud:google-cloud-spanner:6.20.0"
 }
 // Relocate Guava packages since they are incompatible from Embulk's.
 shadowJar {
