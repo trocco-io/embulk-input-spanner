@@ -1,3 +1,8 @@
+0.2.1 (2022-03-12)
+==================
+
+* [#23](https://github.com/trocco-io/embulk-input-spanner/pull/23) Support non-DistributedUnion queries.
+
 0.2.0 (2022-03-12)
 ==================
 
