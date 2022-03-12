@@ -60,6 +60,9 @@ public class SpannerJdbcInputConnection extends JdbcInputConnection {
       PreparedQuery preparedQuery, List<ColumnGetter> getters, int fetchRows, int queryTimeout)
       throws SQLException {
     String query = preparedQuery.getQuery();
+    if (useEmulator) {
+      query = "@{spanner_emulator.disable_query_partitionability_check=true}\n" + query;
+    }
     List<JdbcLiteral> params = preparedQuery.getParameters();
 
     PreparedStatement stmt = connection.prepareStatement(query);
