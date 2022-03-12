@@ -20,7 +20,6 @@ import org.embulk.input.spanner.extension.spanner.SpannerExtension.SetupQueries;
 import org.embulk.input.spanner.extension.spanner.SpannerExtension.TableName;
 import org.embulk.spi.InputPlugin;
 import org.embulk.spi.time.Timestamp;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.msgpack.value.Value;
@@ -192,23 +191,26 @@ public class TestSpannerInputPlugin {
   }
 
   @Test
-  @Disabled(
-      "Spanner Emulator does not support JSON type currently."
-          + " See. https://github.com/GoogleCloudPlatform/cloud-spanner-emulator#features-and-limitations")
   @SetupQueries({
-    @Query("create table %s (v JSON) primary key(i)"),
-    @Query("insert into %s (v) VALUES ('{\"a\":5,\"b\":\"c\",\"d\":{\"e\":\"f\"}}')")
+    @Query("create table %s (i int64, v JSON) primary key(i)"),
+    @Query("insert into %s (i, v) VALUES (1, JSON '{\"a\":5,\"b\":\"c\",\"d\":{\"e\":\"f\"}}')")
   })
   public void testJson(EmbulkTester embulkTester, @TableName String tableName) throws Throwable {
     ConfigSource inConfig =
         embulkTester.loadFromYamlString(
-            String.join("\n", minimumConfigYaml, "table: " + tableName, "order_by: v asc", ""));
+            String.join(
+                "\n",
+                minimumConfigYaml,
+                "table: " + tableName,
+                "select: v",
+                "order_by: i asc",
+                ""));
 
     embulkTester.runInput(
         inConfig,
         (rows) -> {
           assertAll(
-              () -> assertEquals(Value.class, rows.get(0)[0].getClass()),
+              () -> assertInstanceOf(Value.class, rows.get(0)[0]),
               () ->
                   assertEquals(
                       ValueFactory.newMapBuilder()
