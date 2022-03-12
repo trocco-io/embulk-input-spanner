@@ -34,7 +34,7 @@ services:
     # DB Migration (Create Table)
     # https://github.com/cloudspannerecosystem/wrench
     wrench-create:
-      image: mercari/wrench:1.0.3
+      image: mercari/wrench:1.0.4
       command: "create --directory /ddl"
       environment:
         SPANNER_PROJECT_ID: "test-project"
@@ -51,7 +51,7 @@ services:
     # DB Migration (Insert data)
     # https://github.com/cloudspannerecosystem/wrench
     wrench-apply:
-      image: mercari/wrench:1.0.3
+      image: mercari/wrench:1.0.4
       command: "apply --dml /dml/dml.sql"
       environment:
         SPANNER_PROJECT_ID: "test-project"
