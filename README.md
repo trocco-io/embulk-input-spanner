@@ -30,9 +30,9 @@ An embulk input plugin to load records from [Cloud Spanner](https://cloud.google
   - If this option is `true`, the following changes are applied.
     - `autoConfigEmulator=true` and `usePlainText=true` are set to JDBC connection properties.
     - Change the way to get the schema of query that executes the query with `max_rows=1` and `fetch_rows=1` properties instead of explaining the query because Spanner Emulator does not support the `PLAN` query mode.
-- **fetch_rows**: number of rows to fetch one time (used for `java.sql.Statement#setFetchSize`) (integer, default: `10000`)
+- **fetch_rows**: not supported.
 - **connect_timeout**: not supported.
-- **socket_timeout**: timeout for executing the query. 0 means no timeout. (integer (seconds), default: 1800)
+- **socket_timeout**: not supported.
 - **options**: extra JDBC properties (hash, default: {})
   - See. [Cloud Spanner JDBC Connection Properties](https://github.com/googleapis/java-spanner-jdbc#connection-url-properties)
 - If you write SQL directly,
